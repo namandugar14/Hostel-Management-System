@@ -27,9 +27,17 @@ app.use('/api/outings', require('./routes/outingRoutes'));
 app.use('/api/maintenance', require('./routes/maintenanceRoutes'));
 
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'API is running' });
+    res.json({
+        status: 'API is running',
+        environment: process.env.NODE_ENV || 'development',
+        database_host: process.env.DB_HOST || 'localhost'
+    });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+if (process.env.VERCEL !== '1' && require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}
+
+module.exports = app;
