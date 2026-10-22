@@ -1,0 +1,10 @@
+node_modules
+npm-debug.log
+.env
+.env.local
+.git
+.gitignore
+mysql_tail.txt
+*.log
+.DS_Store
+screenshots_temp
