@@ -1,0 +1,184 @@
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h3>SVKM NMIMS</h3>
+            <p style="font-size: 0.8rem; color: #a0a0b5; margin-top: 5px;">{{ currentUser.role }} Dashboard</p>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#!/admin/dashboard">Overview</a></li>
+            <li ng-if="currentUser.role === 'Admin'"><a href="#!/admin/explorer">Data Explorer</a></li>
+            <li><a href="#!/admin/hostels">Hostels & Rooms</a></li>
+            <li><a href="#!/admin/bookings">Room Bookings</a></li>
+            <li ng-if="currentUser.role === 'Admin'"><a href="#!/admin/mess">Mess Management</a></li>
+            <li><a href="#!/admin/complaints">Complaints</a></li>
+            <li><a href="#!/admin/outings" class="active">Outings</a></li>
+            <li><a href="#!/admin/students">Manage Students</a></li>
+            <li><a href="#!/admin/discipline">Discipline (DC)</a></li>
+            <li><a href="#!/admin/maintenance">Maintenance</a></li>
+            <li><a href="#!/admin/damages">Property Damages</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="user-info">
+                <span>Outing Management</span>
+            </div>
+            <button class="logout-btn" ng-click="logout()">Logout</button>
+        </header>
+
+        <div class="content-area">
+            <!-- Outings Overview -->
+            <div class="grid grid-cols-4" style="margin-bottom: 20px;">
+                <div class="card" style="padding: 15px; border-left: 4px solid var(--primary, #4f46e5);">
+                    <h3 style="font-size: 0.85rem; color: #6b7280; text-transform: uppercase;">Total Requests</h3>
+                    <p style="font-size: 1.5rem; font-weight: 600; margin-top: 5px;">{{stats.total}}</p>
+                </div>
+                <div class="card" style="padding: 15px; border-left: 4px solid var(--warning, #f59e0b);">
+                    <h3 style="font-size: 0.85rem; color: #6b7280; text-transform: uppercase;">Pending</h3>
+                    <p style="font-size: 1.5rem; font-weight: 600; margin-top: 5px;">{{stats.pending}}</p>
+                </div>
+                <div class="card" style="padding: 15px; border-left: 4px solid var(--success, #10b981);">
+                    <h3 style="font-size: 0.85rem; color: #6b7280; text-transform: uppercase;">Approved</h3>
+                    <p style="font-size: 1.5rem; font-weight: 600; margin-top: 5px;">{{stats.approved}}</p>
+                </div>
+                <div class="card" style="padding: 15px; border-left: 4px solid var(--danger, #ef4444);">
+                    <h3 style="font-size: 0.85rem; color: #6b7280; text-transform: uppercase;">Rejected/Completed</h3>
+                    <p style="font-size: 1.5rem; font-weight: 600; margin-top: 5px;">{{stats.others}}</p>
+                </div>
+            </div>
+
+            <!-- Outings Chart -->
+            <div class="card" style="margin-bottom: 30px; display: flex; flex-direction: column; align-items: center; padding: 20px;">
+                <h3 style="font-size: 1rem; color: #4b5563; margin-bottom: 15px; align-self: flex-start;">Outings by Status</h3>
+                <div style="position: relative; width: 100%; max-width: 300px; height: 300px;">
+                    <canvas id="outingsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 class="card-title" style="margin-bottom: 0;">Student Outing Requests</h3>
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <div style="position: relative;">
+                            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; pointer-events: none;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                                </svg>
+                            </span>
+                            <input type="text" ng-model="searchQuery" placeholder="Search by name, room, etc..." autocomplete="off"
+                                style="padding: 10px 12px 10px 35px !important; border: 1px solid #d1d5db !important; border-radius: 8px !important; font-size: 0.95rem !important; outline: none !important; width: 320px !important; min-width: 320px !important; box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important; box-sizing: border-box !important;"
+                                onfocus="this.style.borderColor='#4f46e5'; this.style.boxShadow='0 0 0 3px rgba(79, 70, 229, 0.2)'"
+                                onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)'">
+                        </div>
+                        
+                        <select ng-model="filterStatus" ng-init="filterStatus = ''"
+                            style="padding: 10px 35px 10px 15px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 0.9rem; outline: none; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); appearance: none; background: url('data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' fill=\'%236b7280\' viewBox=\'0 0 16 16\'%3E%3Cpath d=\'M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z\'/%3E%3C/svg%3E') no-repeat right 15px center; background-color: white; cursor: pointer; transition: border-color 0.2s ease;"
+                            onfocus="this.style.borderColor='#4f46e5'"
+                            onblur="this.style.borderColor='#e5e7eb'">
+                            <option value="">All Status</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="alert alert-danger" ng-if="errorMsg">{{ errorMsg }}</div>
+                <div class="alert alert-success" ng-if="successMsg">{{ successMsg }}</div>
+
+                <div style="overflow-x: auto;">
+                    <table
+                        style="width: 100%; border-collapse: collapse; text-align: left; border: 1px solid #e5e7eb; border-radius: 8px;">
+                        <thead>
+                            <tr style="background-color: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+                                <th
+                                    style="padding: 12px 15px; font-weight: 600; font-size: 0.85rem; color: #4b5563; text-transform: uppercase;">
+                                    Student</th>
+                                <th
+                                    style="padding: 12px 15px; font-weight: 600; font-size: 0.85rem; color: #4b5563; text-transform: uppercase;">
+                                    Course & Year</th>
+                                <th
+                                    style="padding: 12px 15px; font-weight: 600; font-size: 0.85rem; color: #4b5563; text-transform: uppercase;">
+                                    Hostel</th>
+                                <th
+                                    style="padding: 12px 15px; font-weight: 600; font-size: 0.85rem; color: #4b5563; text-transform: uppercase;">
+                                    Destination</th>
+                                <th
+                                    style="padding: 12px 15px; font-weight: 600; font-size: 0.85rem; color: #4b5563; text-transform: uppercase;">
+                                    Duration</th>
+                                <th
+                                    style="padding: 12px 15px; font-weight: 600; font-size: 0.85rem; color: #4b5563; text-transform: uppercase;">
+                                    Status</th>
+                                <th
+                                    style="padding: 12px 15px; font-weight: 600; font-size: 0.85rem; color: #4b5563; text-transform: uppercase;">
+                                    Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-if="outings.length === 0">
+                                <td colspan="6" style="padding: 20px; text-align: center; color: #6b7280;">No outing
+                                    requests found.</td>
+                            </tr>
+                            <tr ng-repeat="outing in outings | filter:searchQuery | filter:(filterStatus ? {status: filterStatus} : undefined)"
+                                style="border-bottom: 1px solid #e5e7eb;">
+                                <td style="padding: 12px 15px;">
+                                    <div style="font-weight: 500; color: #111827;">{{ outing.student_name }}</div>
+                                    <div style="font-size: 0.85rem; color: #6b7280;">{{ outing.student_email }}</div>
+                                </td>
+                                <td style="padding: 12px 15px; font-size: 0.9rem; color: #4b5563;">
+                                    {{ outing.course }} <br> Year {{ outing.year_of_study }}
+                                </td>
+                                <td style="padding: 12px 15px; font-size: 0.9rem; color: #4b5563;">
+                                    {{ outing.hostel_name || 'Hostel' }}
+                                </td>
+                                <td style="padding: 12px 15px;">
+                                    <div style="font-weight: 500; color: #111827;">{{ outing.destination }}</div>
+                                    <div style="font-size: 0.8rem; color: #6b7280; margin-top: 4px; max-width: 200px;">
+                                        {{ outing.reason }}</div>
+                                </td>
+                                <td style="padding: 12px 15px; font-size: 0.85rem; color: #4b5563;">
+                                    <div style="margin-bottom: 4px;"><strong>From:</strong> {{ outing.departure_date |
+                                        date:'short' }}</div>
+                                    <div><strong>To:</strong> {{ outing.return_date | date:'short' }}</div>
+                                </td>
+                                <td style="padding: 12px 15px;">
+                                    <span class="badge" ng-class="{
+                                              'badge-warning': outing.status === 'Pending', 
+                                              'badge-success': outing.status === 'Approved',
+                                              'badge-danger': outing.status === 'Rejected',
+                                              'badge-primary': outing.status === 'Completed'
+                                          }">
+                                        {{ outing.status }}
+                                    </span>
+                                </td>
+                                <td style="padding: 12px 15px;">
+                                    <div ng-if="outing.status === 'Pending'" style="display: flex; gap: 5px;">
+                                        <button class="btn"
+                                            style="background-color: #10b981; padding: 6px 10px; font-size: 0.85rem;"
+                                            ng-click="updateStatus(outing.id, 'Approved')">Approve</button>
+                                        <button class="btn"
+                                            style="background-color: #ef4444; padding: 6px 10px; font-size: 0.85rem;"
+                                            ng-click="updateStatus(outing.id, 'Rejected')">Reject</button>
+                                    </div>
+                                    <div ng-if="outing.status === 'Approved'" style="display: flex; gap: 5px;">
+                                        <button class="btn"
+                                            style="background-color: #3b82f6; padding: 6px 10px; font-size: 0.85rem;"
+                                            ng-click="updateStatus(outing.id, 'Completed')">Mark Completed</button>
+                                    </div>
+                                    <span ng-if="outing.status === 'Rejected' || outing.status === 'Completed'"
+                                        style="font-size: 0.85rem; color: #9ca3af; font-style: italic;">
+                                        No actions
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>

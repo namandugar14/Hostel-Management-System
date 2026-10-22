@@ -1,0 +1,133 @@
+<div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h3>SVKM NMIMS</h3>
+            <p style="font-size: 0.8rem; color: #a0a0b5; margin-top: 5px;">Warden Dashboard</p>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#!/warden/dashboard">Overview</a></li>
+            <li><a href="#!/warden/rooms" class="active">Room Status</a></li>
+            <li><a href="#!/warden/bookings">Room Bookings</a></li>
+            <li><a href="#!/warden/complaints">Complaints</a></li>
+            <li><a href="#!/warden/outings">Outings</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="user-info">
+                <span>Room Status & Occupancy</span>
+            </div>
+            <button class="logout-btn" ng-click="logout()">Logout</button>
+        </header>
+
+        <div class="content-area">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 class="card-title" style="margin-bottom: 0;">Hostel Occupancy Overview</h2>
+                <div style="display: flex; gap: 10px;">
+                    <input type="file" id="sqlFileInput" style="display: none;" accept=".sql" onchange="angular.element(this).scope().importSQLFile(this)">
+                    <button onclick="document.getElementById('sqlFileInput').click()" style="background-color: var(--success, #10b981); color: white; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 500;">
+                        Import SQL
+                    </button>
+                    <button ng-click="exportSQL()" style="background-color: var(--primary, #4f46e5); color: white; padding: 8px 16px; border-radius: 6px; border: none; cursor: pointer; font-weight: 500;">
+                        Export to SQL
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-4" style="margin-bottom: 30px;">
+                <div class="card" style="padding: 15px; border-left: 4px solid var(--primary);">
+                    <h3 style="font-size: 0.85rem; color: #6b7280; text-transform: uppercase;">Total Rooms</h3>
+                    <p style="font-size: 1.5rem; font-weight: 600; margin-top: 5px;">{{stats.totalRooms}}</p>
+                </div>
+                <div class="card" style="padding: 15px; border-left: 4px solid var(--primary);">
+                    <h3 style="font-size: 0.85rem; color: #6b7280; text-transform: uppercase;">Total Capacity</h3>
+                    <p style="font-size: 1.5rem; font-weight: 600; margin-top: 5px;">{{stats.totalCapacity}}</p>
+                </div>
+                <div class="card" style="padding: 15px; border-left: 4px solid var(--danger);">
+                    <h3 style="font-size: 0.85rem; color: #6b7280; text-transform: uppercase;">Occupied Seats</h3>
+                    <p style="font-size: 1.5rem; font-weight: 600; margin-top: 5px;">{{stats.occupiedSeats}}</p>
+                </div>
+                <div class="card" style="padding: 15px; border-left: 4px solid var(--success);">
+                    <h3 style="font-size: 0.85rem; color: #6b7280; text-transform: uppercase;">Free Seats</h3>
+                    <p style="font-size: 1.5rem; font-weight: 600; margin-top: 5px;">{{stats.freeSeats}}</p>
+                </div>
+            </div>
+
+            <!-- Occupancy Chart -->
+            <div class="card" style="margin-bottom: 30px; display: flex; flex-direction: column; align-items: center; padding: 20px;">
+                <h3 style="font-size: 1rem; color: #4b5563; margin-bottom: 15px; align-self: flex-start;">Capacity vs Occupancy</h3>
+                <div style="position: relative; width: 100%; max-width: 300px; height: 300px;">
+                    <canvas id="occupancyChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 class="card-title" style="margin-bottom: 0;">Room Details</h3>
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <div style="position: relative;">
+                            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af; pointer-events: none;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                                </svg>
+                            </span>
+                            <input type="text" ng-model="searchQuery" placeholder="Search by name, room, etc..." autocomplete="off"
+                                style="padding: 10px 12px 10px 35px !important; border: 1px solid #d1d5db !important; border-radius: 8px !important; font-size: 0.95rem !important; outline: none !important; width: 320px !important; min-width: 320px !important; box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important; box-sizing: border-box !important;"
+                                onfocus="this.style.borderColor='#4f46e5'; this.style.boxShadow='0 0 0 3px rgba(79, 70, 229, 0.2)'"
+                                onblur="this.style.borderColor='#d1d5db'; this.style.boxShadow='0 1px 3px rgba(0,0,0,0.05)'">
+                        </div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Room Number</th>
+                                <th>Status</th>
+                                <th>Occupancy</th>
+                                <th>Students Residing</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="room in rooms | filter:searchQuery">
+                                <td><strong>{{ room.room_number }}</strong></td>
+                                <td>
+                                    <span class="status-badge" ng-class="{
+                                        'status-approved': room.status === 'Available',
+                                        'status-rejected': room.status === 'Full',
+                                        'status-pending': room.status === 'Maintenance'
+                                    }">{{ room.status }}</span>
+                                </td>
+                                <td>{{ room.occupied_seats }} / {{ room.capacity }}</td>
+                                <td>
+                                    <div ng-if="room.occupants.length === 0"
+                                        style="color: var(--text-light); font-style: italic;">
+                                        No students assigned
+                                    </div>
+                                    <div ng-if="room.occupants.length > 0">
+                                        <div ng-repeat="student in room.occupants"
+                                            style="margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #edf2f7;">
+                                            <div style="font-weight: 500;">{{ student.name }} <span
+                                                    style="font-weight: normal; color: var(--text-light); font-size: 0.85em;">({{
+                                                    student.course }}, Year {{ student.year_of_study }})</span></div>
+                                            <div style="font-size: 0.85em; color: var(--text-light);">{{ student.email
+                                                }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr ng-if="rooms.length === 0">
+                                <td colspan="4" style="text-align: center; color: var(--text-light);">No rooms found for
+                                    your hostel.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
